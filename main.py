@@ -1,97 +1,45 @@
-from classes import AddressBook, Record
+import pickle
 
+class AddressBook:
+    def __init__(self):
+        self.contacts = {}
 
+    def add_contact(self, name, phone):
+        self.contacts[name] = phone
 
-def parse_input(user_input):
-    cmd, *args = user_input.split()
-    cmd = cmd.strip().lower()
-    return cmd, *args
+    def __str__(self):
+        return '\n'.join([f'{name}: {phone}' for name, phone in self.contacts.items()])
 
-# @input_error
-def add_contact(args, book):
-    name, phone = args
-    record = book.find(name)
-    if not record:
-        record = Record(name)
-        book.add_record(record)
-    return "Contact added."
-    if phone:
-        record.add_phone(phone)
-    return "Contact updated."
+def save_data(book, filename="addressbook.pkl"):
+    with open(filename, "wb") as f:
+        pickle.dump(book, f)
 
-# @input_error
-def change_contact(args, book: AddressBook):
-    name, old_phone, new_phone = args
-    record = book.find(name)
-    if not record:
-        return "Contact not found."
-    if record.change_phone(old_phone, new_phone):
-        return "Phone number updated."
-    return "Old phone number not found."
-
-# @input_error
-def add_birthday(args, book: AddressBook):
-    name, birthday = args
-    record = book.find(name)
-    if record:
-        record.add_birthday(birthday)
-        return f"Birthday for {name} added."
-    return "Contact not found."
-
-# @input_error
-def show_birthday(args, book: AddressBook):
-    name = args[0]
-    record = book.find(name)
-    if record and record.birthday:
-        return f"{name}'s birthday is on {record.birthday.value.strftime('%d.%m.%Y')}."
-    return "Birthday not found."
-
-# @input_error
-def birthdays(args, book: AddressBook):
-    upcoming_birthdays = book.get_upcoming_birthdays()
-    result = []
-    for entry in upcoming_birthdays:
-        result.append(f"{entry['name']} has a birthday on {entry['birthday'].strftime('%d.%m.%Y')}")
-    return "\\n".join(result)
-
-def show_phone(args, book):
-    name = args[0]
-    contact = book.find(name)
-    if not contact:
-        return "Contact not found"
-    return contact
-
-def show_all(book):
-    return book
+def load_data(filename="addressbook.pkl"):
+    try:
+        with open(filename, "rb") as f:
+            return pickle.load(f)
+    except FileNotFoundError:
+        return AddressBook()
 
 def main():
-    book = AddressBook()
-    print("Welcome to the assistant bot!")
-    while True:
-        user_input = input("Enter a command: ")
-        command, *args = parse_input(user_input)
+    book = load_data() 
 
-        if command in ["close", "exit"]:
-            print("Good bye!")
-            break
-        elif command == "hello":
-            print("How can I help you?")
-        elif command == "add":
-            print(add_contact(args, book))
-        elif command == "change":
-            print(change_contact(args, book))
-        elif command == "phone":
-            print(show_phone(args, book))
+    while True:
+        command = input("Enter command: ").strip().lower()
+
+        if command == "add":
+            name = input("Enter name: ")
+            phone = input("Enter phone: ")
+            book.add_contact(name, phone)
         elif command == "all":
-            print(show_all(book))
-        elif command == "add-birthday":
-            print(add_birthday(args, book))
-        elif command == "show-birthday":
-            print(show_birthday(args, book))
-        elif command == "birthdays":
-            print(birthdays(args, book))
+            print("Address Book:")
+            print(book)
+        elif command == "exit":
+            save_data(book) 
+            print("Data saved. Exiting program.")
+            break
         else:
-            print("Invalid command.")
+            print("Unknown command, try again.")
 
 if __name__ == "__main__":
     main()
