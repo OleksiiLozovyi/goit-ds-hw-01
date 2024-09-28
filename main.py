@@ -43,3 +43,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+print(pickle.format_version)
